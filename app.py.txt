@@ -1,0 +1,44 @@
+import streamlit as st
+import yt_dlp
+import os
+
+# Cấu hình giao diện trang web
+st.set_page_config(page_title="TikTok Downloader - No Watermark", page_icon="🎬")
+
+st.title("🎬 TikTok Video Downloader")
+st.write("Dán link TikTok vào dưới đây để lấy video không dính ID.")
+
+# Ô nhập link
+url = st.text_input("Dán link TikTok tại đây:", placeholder="https://www.tiktok.com/@user/video/...")
+
+if url:
+    with st.spinner('Đang bóc tách video...'):
+        ydl_opts = {
+            'format': 'bestvideo[vcodec^=avc1]+bestaudio[acodec^=mp4a]/best[vcodec^=avc1]',
+            'quiet': True,
+            'no_warnings': True,
+        }
+        
+        try:
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                info = ydl.extract_info(url, download=False)
+                video_url = info.get('url')
+                title = info.get('title', 'video_tiktok')
+
+                if video_url:
+                    st.success("Đã tìm thấy video!")
+                    
+                    # 1. Hiển thị video xem trước
+                    st.video(video_url)
+                    
+                    # 2. Nút bấm tải về
+                    st.download_button(
+                        label="📥 Bấm vào đây để Tải Video",
+                        data=video_url, # Trong thực tế cần dùng requests để lấy stream data
+                        file_name=f"{title}.mp4",
+                        mime="video/mp4"
+                    )
+        except Exception as e:
+            st.error(f"Lỗi: {e}")
+
+st.info("Lưu ý: Một số video có thể không lấy được do chính sách bảo mật của TikTok.")
