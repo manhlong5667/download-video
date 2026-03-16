@@ -1,18 +1,17 @@
 import streamlit as st
 import yt_dlp
 
-st.set_page_config(page_title="TikTok Downloader Pro", page_icon="⚡")
+st.set_page_config(page_title="TikTok Downloader Pro", page_icon="🎬")
 
-st.title("⚡ TikTok Downloader - Fix 403")
-st.write("Sửa lỗi Forbidden và Video không có nội dung.")
+st.title("🎬 TikTok Downloader Pro")
+st.write("Giải pháp tải tư liệu kỹ thuật không dính ID (Dự phòng đa cổng)")
 
-url = st.text_input("Dán link TikTok vào đây:")
+url = st.text_input("Dán link TikTok vào đây:", placeholder="https://www.tiktok.com/...")
 
 if url:
-    with st.spinner('🔍 Đang bóc tách luồng video...'):
-        # Cấu hình lấy link gốc không qua trung gian
+    with st.spinner('⚙️ Đang bóc tách luồng dữ liệu...'):
         ydl_opts = {
-            'format': 'bestvideo+bestaudio/best',
+            'format': 'best',
             'quiet': True,
             'no_warnings': True,
             'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -22,44 +21,38 @@ if url:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info(url, download=False)
                 direct_url = info.get('url')
-                title = info.get('title', 'video_tiktok')
+                title = info.get('title', 'video_thang_may')
                 
                 if direct_url:
-                    st.success("✅ Đã tìm thấy luồng video gốc!")
+                    st.success("✅ Đã lấy được link gốc!")
                     
-                    # Hiển thị video để kiểm tra
+                    # Hiển thị video trực tiếp trên web
                     st.video(direct_url)
                     
-                    # NÚT BẤM THẦN THÁNH: Ép trình duyệt tự tải luồng gốc
-                    # Cách này giúp máy tính của bạn tự kết nối với TikTok, bỏ qua server Streamlit bị chặn
+                    st.markdown("### 📥 Chọn cổng tải về:")
+                    
+                    # CỔNG 1: Tải trực tiếp (Dành cho trình duyệt Edge/Chrome)
                     st.markdown(f"""
-                        <div style="text-align: center;">
-                            <a href="{direct_url}" target="_blank" rel="noopener noreferrer">
-                                <button style="
-                                    width: 100%;
-                                    background-color: #25D366;
-                                    color: white;
-                                    padding: 20px;
-                                    border: none;
-                                    border-radius: 15px;
-                                    font-weight: bold;
-                                    font-size: 20px;
-                                    cursor: pointer;
-                                    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-                                ">
-                                    📥 NHẤN VÀO ĐÂY ĐỂ MỞ FILE GỐC
-                                </button>
-                            </a>
-                            <p style="margin-top: 15px; color: #555;">
-                                <b>Hướng dẫn:</b> Sau khi nhấn nút, nếu video hiện ra ở tab mới: <br>
-                                Chuột phải vào video -> Chọn <b>"Lưu video thành..." (Save video as...)</b>
-                            </p>
-                        </div>
+                        <a href="{direct_url}" target="_blank" download="{title}.mp4">
+                            <button style="width: 100%; background-color: #007bff; color: white; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-bottom: 10px;">
+                                CỔNG 1: Tải trực tiếp (Khuyên dùng)
+                            </button>
+                        </a>
                     """, unsafe_allow_html=True)
-                else:
-                    st.error("Không lấy được link trực tiếp.")
+                    
+                    # CỔNG 2: Mở video ở tab mới để "Save video as..."
+                    st.markdown(f"""
+                        <a href="{direct_url}" target="_blank">
+                            <button style="width: 100%; background-color: #28a745; color: white; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">
+                                CỔNG 2: Mở tab mới (Chuột phải > Lưu video)
+                            </button>
+                        </a>
+                    """, unsafe_allow_html=True)
+
+                    st.warning("⚠️ Nếu Cổng 1 tải về file vài KB, hãy dùng Cổng 2: Đợi video hiện ra ở tab mới -> Chuột phải -> chọn 'Lưu video thành...'")
+                
         except Exception as e:
-            st.error(f"Lỗi bóc tách: {e}")
+            st.error(f"Lỗi: {e}")
 
 st.divider()
-st.info("Vì bạn đã có VLC, file tải về dù là định dạng nào cũng sẽ xem được cực nét.")
+st.info("💡 Mẹo: Vì bạn đã cài VLC, cứ thấy file tải về là MP4 hay MKV thì VLC đều cân được hết!")
