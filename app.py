@@ -1,36 +1,49 @@
 import streamlit as st
 import yt_dlp
-import os
 import requests
+import io
 
-# Cấu hình giao diện trang web
-st.set_page_config(page_title="Tải Video TikTok Không ID", page_icon="🎬", layout="centered")
+# 1. Cấu hình giao diện trang web
+st.set_page_config(
+    page_title="TikTok Downloader - No ID", 
+    page_icon="🎬", 
+    layout="centered"
+)
 
-# CSS để làm nút bấm đẹp hơn
+# Thêm một chút CSS để giao diện sạch sẽ, chuyên nghiệp hơn
 st.markdown("""
     <style>
+    .main {
+        background-color: #f5f7f9;
+    }
     .stButton>button {
         width: 100%;
-        border-radius: 5px;
-        height: 3em;
-        background-color: #ff4b4b;
+        border-radius: 10px;
+        height: 3.5em;
+        background-color: #00ADFF;
+        color: white;
+        font-weight: bold;
+        border: none;
+    }
+    .stButton>button:hover {
+        background-color: #0087c7;
         color: white;
     }
     </style>
     """, unsafe_allow_html=True)
 
 st.title("🎬 TikTok Video Downloader")
-st.subheader("Dành cho tư liệu thang máy & kỹ thuật")
+st.write("Tải video TikTok không dính ID - Hỗ trợ tư liệu kỹ thuật & thang máy.")
 
-# Ô nhập link
-url = st.text_input("Dán link TikTok vào đây:", placeholder="https://www.tiktok.com/@user/video/...")
+# 2. Ô nhập link video
+url = st.text_input("Dán link video TikTok vào đây:", placeholder="https://www.tiktok.com/...")
 
 if url:
-    with st.spinner('⚙️ Đang bóc tách dữ liệu từ TikTok...'):
-        # Cấu hình yt-dlp thông minh hơn
+    with st.spinner('⚙️ Đang bóc tách dữ liệu... Vui lòng đợi trong giây lát.'):
+        # Cấu hình yt-dlp cực kỳ linh hoạt (Dòng này quan trọng nhất)
         ydl_opts = {
-            # Thử lấy H.264 (avc1) trước để Windows đọc được, nếu không có thì lấy bản tốt nhất bất kỳ
-            'format': 'bestvideo[vcodec^=avc1]+bestaudio[acodec^=mp4a]/best[vcodec^=avc1]/best',
+            # Thử lấy H.264 (avc1) trước, nếu không có thì lấy bản tốt nhất bất kỳ
+            'format': 'bestvideo[vcodec^=avc1]+bestaudio[acodec^=mp4a]/bestvideo+bestaudio/best',
             'quiet': True,
             'no_warnings': True,
             'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -38,7 +51,7 @@ if url:
         
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                # Lấy thông tin video
+                # Trích xuất thông tin
                 info = ydl.extract_info(url, download=False)
                 video_url = info.get('url')
                 title = info.get('title', 'video_tiktok')
@@ -46,28 +59,29 @@ if url:
                 if video_url:
                     st.success("✅ Đã tìm thấy video!")
                     
-                    # Hiển thị video để xem trước (Preview)
+                    # Hiển thị video xem trước
                     st.video(video_url)
                     
-                    # Xử lý luồng tải xuống thực tế (để tránh lỗi 403 khi nhấn nút)
-                    response = requests.get(video_url, stream=True)
-                    video_bytes = response.content
-
-                    # Nút bấm tải về máy
-                    st.download_button(
-                        label="🚀 TẢI VIDEO VỀ MÁY (KHÔNG ID)",
-                        data=video_bytes,
-                        file_name=f"{title}.mp4",
-                        mime="video/mp4"
-                    )
-                    
-                    st.info("💡 Mẹo: Nếu video tải về không có tiếng, hãy cài thêm ffmpeg vào project của bạn.")
+                    # Xử lý tải dữ liệu video về RAM của server để người dùng tải về máy (Tránh lỗi 403)
+                    try:
+                        video_data = requests.get(video_url, stream=True).content
+                        
+                        # Nút bấm tải xuống
+                        st.download_button(
+                            label="📥 TẢI VIDEO XUỐNG MÁY",
+                            data=video_data,
+                            file_name=f"{title}.mp4",
+                            mime="video/mp4"
+                        )
+                        st.info("💡 Lưu ý: Nếu video tải về không xem được bằng trình duyệt, hãy dùng phần mềm VLC.")
+                    except:
+                        st.error("Không thể tải dữ liệu video. Vui lòng thử lại hoặc dùng link khác.")
                 else:
-                    st.error("❌ Không thể lấy link trực tiếp từ video này.")
+                    st.error("❌ Không lấy được link video trực tiếp.")
                     
         except Exception as e:
-            st.error(f"⚠️ Lỗi hệ thống: {str(e)}")
-            st.warning("Thử lại với link khác hoặc kiểm tra xem video có bị xóa không.")
+            st.error(f"⚠️ Lỗi: {str(e)}")
+            st.info("Mẹo: Đảm bảo bạn dán đúng link video TikTok (có chữ /video/ trong link).")
 
 st.markdown("---")
-st.caption("Công cụ hỗ trợ tải tư liệu kỹ thuật nhanh chóng.")
+st.caption("Công cụ hỗ trợ lưu trữ tư liệu chuyên dụng.")
