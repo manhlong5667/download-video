@@ -1,10 +1,10 @@
 import streamlit as st
 import requests
 
-# Cấu hình trang chuyên nghiệp
-st.set_page_config(page_title="TikTok HD Downloader", page_icon="🎬", layout="centered")
+# 1. Cấu hình trang chuyên nghiệp
+st.set_page_config(page_title="TikTok HD Downloader - Private", page_icon="🔒", layout="centered")
 
-# Giao diện tùy chỉnh bằng CSS
+# 2. Giao diện tùy chỉnh bằng CSS
 st.markdown("""
     <style>
     .stApp { background-color: #f4f7f6; }
@@ -28,54 +28,76 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-st.title("🎬 Hệ thống Tải Video HD")
-st.write("Giải pháp lấy tư liệu thang máy sắc nét, không dính ID.")
+# 3. Chức năng Đăng nhập (Mật khẩu: 55555)
+def check_password():
+    if "password_correct" not in st.session_state:
+        st.session_state.password_correct = False
 
-# Tạo Form để có nút xác nhận (Enter)
-with st.container():
-    with st.form(key='download_form'):
-        url = st.text_input("Dán link TikTok vào đây:", placeholder="https://www.tiktok.com/...")
-        submit_button = st.form_submit_button(label='🚀 BẮT ĐẦU XỬ LÝ')
+    if st.session_state.password_correct:
+        return True
 
-if submit_button and url:
-    with st.spinner('⚙️ Đang bóc tách bản HD chất lượng cao...'):
-        try:
-            # Gọi API với tham số HD
-            api_url = f"https://www.tikwm.com/api/?url={url}&hd=1"
-            response = requests.get(api_url).json()
-            
-            if response.get('code') == 0:
-                data = response['data']
-                # Lấy link HD sắc nét nhất
-                video_url = data.get('hdplay') or data.get('play')
-                title = data.get('title', 'video_thang_may')
-                
-                st.success("✅ Đã xử lý thành công bản HD!")
-                
-                # Hiển thị Video Preview
-                st.video(video_url)
-                
-                # Khu vực tải về chuyên nghiệp
-                st.markdown(f"""
-                    <div style="background-color: #e3f2fd; padding: 20px; border-radius: 12px; border: 1px solid #90caf9; text-align: center; margin-top: 20px;">
-                        <p style="font-weight: bold; color: #1565c0; font-size: 18px;">📥 TẢI FILE GỐC SẮC NÉT</p>
-                        <a href="{video_url}" target="_blank">
-                            <button style="width: 100%; background-color: #1976d2; color: white; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px;">
-                                MỞ VÀ LƯU VIDEO HD (TAB MỚI)
-                            </button>
-                        </a>
-                        <p style="margin-top: 15px; font-size: 14px; color: #555; text-align: left;">
-                            <b>Hướng dẫn lưu file:</b><br>
-                            1. Sau khi tab mới mở ra, nhấn <b>Chuột phải</b> vào video.<br>
-                            2. Chọn <b>"Lưu video thành..." (Save video as...)</b>.<br>
-                            3. Mở file bằng <b>VLC</b> để thấy rõ từng chi tiết cơ khí/inox.
-                        </p>
-                    </div>
-                """, unsafe_allow_html=True)
+    st.title("🔒 Truy cập nội bộ")
+    with st.form(key='login_form'):
+        pwd = st.text_input("Nhập mật khẩu để tiếp tục:", type="password")
+        login_btn = st.form_submit_button("ĐĂNG NHẬP")
+        
+        if login_btn:
+            if pwd == "55555":
+                st.session_state.password_correct = True
+                st.rerun()
             else:
-                st.error("❌ Không lấy được link HD. Vui lòng kiểm tra lại link video.")
-        except Exception as e:
-            st.error(f"⚠️ Lỗi hệ thống: {e}")
+                st.error("❌ Mật khẩu không đúng!")
+    return False
 
-st.divider()
-st.caption("Công cụ được dựng bởi Mạnh Long")
+# Nếu đã đăng nhập thành công thì mới hiện nội dung bên dưới
+if check_password():
+    st.title("🎬 Hệ thống Tải Video HD")
+    st.write("Chào mừng bạn! Hãy dán link để lấy tư liệu thang máy sắc nét.")
+
+    # Tạo Form nhập liệu
+    with st.container():
+        with st.form(key='download_form'):
+            url = st.text_input("Dán link TikTok vào đây:", placeholder="https://www.tiktok.com/...")
+            submit_button = st.form_submit_button(label='🚀 BẮT ĐẦU XỬ LÝ')
+
+    if submit_button and url:
+        with st.spinner('⚙️ Đang bóc tách bản HD chất lượng cao...'):
+            try:
+                # Gọi API với tham số HD để tránh video bị nhòe
+                api_url = f"https://www.tikwm.com/api/?url={url}&hd=1"
+                response = requests.get(api_url).json()
+                
+                if response.get('code') == 0:
+                    data = response['data']
+                    # Lấy link HD sắc nét nhất (hdplay)
+                    video_url = data.get('hdplay') or data.get('play')
+                    
+                    st.success("✅ Đã xử lý thành công bản HD!")
+                    
+                    # Hiển thị Video Preview
+                    st.video(video_url)
+                    
+                    # Khu vực tải về chuyên nghiệp (Vượt lỗi 403 Forbidden)
+                    st.markdown(f"""
+                        <div style="background-color: #e3f2fd; padding: 20px; border-radius: 12px; border: 1px solid #90caf9; text-align: center; margin-top: 20px;">
+                            <p style="font-weight: bold; color: #1565c0; font-size: 18px;">📥 TẢI FILE GỐC SẮC NÉT</p>
+                            <a href="{video_url}" target="_blank">
+                                <button style="width: 100%; background-color: #1976d2; color: white; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px;">
+                                    MỞ VÀ LƯU VIDEO HD (TAB MỚI)
+                                </button>
+                            </a>
+                            <p style="margin-top: 15px; font-size: 14px; color: #555; text-align: left;">
+                                <b>Hướng dẫn lưu file:</b><br>
+                                1. Sau khi tab mới mở ra, nhấn <b>Chuột phải</b> vào video.<br>
+                                2. Chọn <b>"Lưu video thành..."</b>.<br>
+                                3. Mở file bằng <b>VLC</b> để xem chi tiết kỹ thuật.
+                            </p>
+                        </div>
+                    """, unsafe_allow_html=True)
+                else:
+                    st.error("❌ Không lấy được link HD. Vui lòng kiểm tra lại link.")
+            except Exception as e:
+                st.error(f"⚠️ Lỗi hệ thống: {e}")
+
+    st.divider()
+    st.caption("Công cụ tối ưu cho kỹ thuật viên thang máy.")
