@@ -52,7 +52,7 @@ def check_password():
 # Nếu đã đăng nhập thành công thì mới hiện nội dung bên dưới
 if check_password():
     st.title("🎬 Hệ thống Tải Video HD")
-    st.write("Chào mừng bạn! Hãy dán link để lấy tư liệu thang máy sắc nét.")
+    st.write("Chào mừng bạn! Hãy dán link để lấy video tiktok sắc nét.")
 
     # Tạo Form nhập liệu
     with st.container():
@@ -100,4 +100,4 @@ if check_password():
                 st.error(f"⚠️ Lỗi hệ thống: {e}")
 
     st.divider()
-    st.caption("Công cụ tối ưu cho kỹ thuật viên thang máy.")
+    st.caption("Mạnh Long")
