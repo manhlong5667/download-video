@@ -3,13 +3,14 @@ import yt_dlp
 
 st.set_page_config(page_title="TikTok Downloader Pro", page_icon="🎬")
 
-st.title("🎬 TikTok Downloader Pro")
-st.write("Giải pháp tải tư liệu kỹ thuật không dính ID (Dự phòng đa cổng)")
+st.title("🎬 TikTok Downloader - Fix 403 Forbidden")
+st.write("Giải pháp bóc tách link gốc để tránh bị TikTok chặn server.")
 
-url = st.text_input("Dán link TikTok vào đây:", placeholder="https://www.tiktok.com/...")
+url = st.text_input("Dán link TikTok vào đây:")
 
 if url:
-    with st.spinner('⚙️ Đang bóc tách luồng dữ liệu...'):
+    with st.spinner('⚙️ Đang bóc tách link trực tiếp...'):
+        # Cấu hình tối giản để tránh bị nhận diện là bot
         ydl_opts = {
             'format': 'best',
             'quiet': True,
@@ -20,39 +21,31 @@ if url:
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info(url, download=False)
-                direct_url = info.get('url')
-                title = info.get('title', 'video_thang_may')
+                # Lấy link CDN trực tiếp từ TikTok
+                video_url = info.get('url')
                 
-                if direct_url:
-                    st.success("✅ Đã lấy được link gốc!")
+                if video_url:
+                    st.success("✅ Đã tìm thấy link video gốc!")
                     
-                    # Hiển thị video trực tiếp trên web
-                    st.video(direct_url)
+                    # 1. Hiển thị trình phát video (Nếu vẫn 0:00 thì đừng lo, quan trọng là link tải)
+                    st.video(video_url)
                     
-                    st.markdown("### 📥 Chọn cổng tải về:")
-                    
-                    # CỔNG 1: Tải trực tiếp (Dành cho trình duyệt Edge/Chrome)
+                    # 2. Tạo nút mở link trực tiếp
                     st.markdown(f"""
-                        <a href="{direct_url}" target="_blank" download="{title}.mp4">
-                            <button style="width: 100%; background-color: #007bff; color: white; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-bottom: 10px;">
-                                CỔNG 1: Tải trực tiếp (Khuyên dùng)
-                            </button>
-                        </a>
+                        <div style="background-color: #f0f2f6; padding: 20px; border-radius: 10px; border: 1px solid #ddd;">
+                            <p><b>Bước 1:</b> Nhấn vào nút xanh dưới đây để mở video ở tab mới.</p>
+                            <a href="{video_url}" target="_blank">
+                                <button style="width: 100%; background-color: #28a745; color: white; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px;">
+                                    MỞ VIDEO TRONG TAB MỚI
+                                </button>
+                            </a>
+                            <p style="margin-top: 15px;"><b>Bước 2:</b> Tại tab mới, bạn nhấn <b>chuột phải</b> vào video và chọn <b>"Lưu video thành..." (Save video as...)</b>.</p>
+                        </div>
                     """, unsafe_allow_html=True)
+                else:
+                    st.error("Không thể trích xuất link. Video có thể ở chế độ riêng tư.")
                     
-                    # CỔNG 2: Mở video ở tab mới để "Save video as..."
-                    st.markdown(f"""
-                        <a href="{direct_url}" target="_blank">
-                            <button style="width: 100%; background-color: #28a745; color: white; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">
-                                CỔNG 2: Mở tab mới (Chuột phải > Lưu video)
-                            </button>
-                        </a>
-                    """, unsafe_allow_html=True)
-
-                    st.warning("⚠️ Nếu Cổng 1 tải về file vài KB, hãy dùng Cổng 2: Đợi video hiện ra ở tab mới -> Chuột phải -> chọn 'Lưu video thành...'")
-                
         except Exception as e:
-            st.error(f"Lỗi: {e}")
+            st.error(f"Lỗi hệ thống: {e}")
 
-st.divider()
-st.info("💡 Mẹo: Vì bạn đã cài VLC, cứ thấy file tải về là MP4 hay MKV thì VLC đều cân được hết!")
+st.info("💡 Vì bạn đã có VLC, sau khi tải về bạn cứ mở bằng VLC là sẽ thấy nội dung video cực nét!")
